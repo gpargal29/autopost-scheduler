@@ -9,7 +9,6 @@ import QuoteLibrary from './pages/QuoteLibrary';
 import SmartScheduler from './pages/SmartScheduler';
 import SocialAccounts from './pages/SocialAccounts';
 import PostingHistory from './pages/PostingHistory';
-import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -32,7 +31,6 @@ function App() {
               <Route path="scheduler" element={<SmartScheduler />} />
               <Route path="accounts" element={<SocialAccounts />} />
               <Route path="history" element={<PostingHistory />} />
-              <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>
