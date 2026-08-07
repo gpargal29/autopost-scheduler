@@ -1,11 +1,19 @@
 const OpenAI = require('openai');
 
+const isGroq = !!process.env.GROQ_API_KEY;
+const apiKey = isGroq ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY;
+const baseURL = isGroq ? 'https://api.groq.com/openai/v1' : undefined;
+const model = isGroq
+  ? process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
+  : process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
+  ...(baseURL && { baseURL }),
 });
 
 /**
- * Generate structured quote metadata using OpenAI API
+ * Generate structured quote metadata using AI API (Groq or OpenAI)
  * @param {string} category - Selected category
  * @param {string} customTopic - Optional custom topic or keywords
  * @param {string} tone - Tone of the quote (Inspirational, Professional, etc.)
@@ -36,7 +44,7 @@ Target Audience: ${targetAudience}`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },

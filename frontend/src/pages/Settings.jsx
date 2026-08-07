@@ -41,7 +41,7 @@ const Settings = () => {
               <div class="flex items-center gap-3">
                 <Cpu class="w-5 h-5 text-brand-400" />
                 <div>
-                  <div class="font-bold text-white">OpenAI GPT Integration</div>
+                  <div class="font-bold text-white">Groq / OpenAI AI Integration</div>
                   <div class="text-slate-400 text-[11px]">Structured content generation engine configured</div>
                 </div>
               </div>
