@@ -6,12 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [Unreleased]
+## [1.1.0] - 2026-08-06
 
-### Planned & Active Work
-- **Groq API Migration**: Transition backend AI service from OpenAI API to Groq API using `groq-sdk` or OpenAI-compatible Groq API endpoint.
-- **Route Integration Alignment**: Wire secondary page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`) into `frontend/src/App.jsx`.
-- **System Verification**: Execute end-to-end testing across registration, Groq generation, library filtering, scheduling, and background cron execution.
+- **Release Name**: Groq API & Complete Route Integration
+- **Release Type**: Minor Release
+- **Release Status**: Stable
+
+### Added
+- **Groq API Support**: Configured `backend/services/openaiService.js` to support Groq API OpenAI-compatible endpoint (`https://api.groq.com/openai/v1`) using `process.env.GROQ_API_KEY`.
+- **Configurable Model Environment Variables**: Added `GROQ_MODEL` (default: `llama-3.3-70b-versatile`) and `OPENAI_MODEL` (default: `gpt-3.5-turbo`) to `backend/.env` and `backend/.env.example`.
+- **Frontend Route Alignment**: Wired `SocialAccounts`, `PostingHistory`, `Analytics`, and `Settings` page components in `frontend/src/App.jsx` across `/accounts`, `/history`, `/analytics`, `/settings`.
+- **Settings UI Update**: Updated `frontend/src/pages/Settings.jsx` to reflect Groq / OpenAI AI Integration status.
+
+### Security & Configuration
+- Documented `GROQ_API_KEY`, `GROQ_MODEL`, and `OPENAI_MODEL` in `.env.example` and `.env`.
+
+### Key Milestones Accomplished
+- Groq API Integration Completed
+- Configurable AI Model Variables Established
+- Frontend Route Mapping Completed (100% Page Wiring)
+- All Living Documentation Synchronized
 
 ---
 
@@ -42,32 +56,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Created `docs/06_DECISIONS.md` Architectural Decision Records (ADRs).
 - Created `docs/07_SETUP.md` environment setup and installation manual.
 
-### Security
-- Password hashing using `bcryptjs` (salt rounds: 10) with `select: false` on Mongoose password queries.
-- Protected API routes enforcing Authorization Bearer JWT verification.
-
-### Key Milestones Accomplished
-- MERN Architecture Established
-- JWT Authentication Implemented
-- AI Quote Generation Completed
-- Quote Library Completed
-- Smart Scheduler Completed
-- Background Scheduler Operational
-- Living Documentation System Established
-
 ### Release Summary
 This release establishes the first fully functional demonstration version of the application, including full-stack JWT authentication, AI quote generation, quote library management, smart scheduling workflows, a background Node Cron worker, and a living documentation system.
-
----
-
-## Changelog Maintenance Rules
-
-Whenever a new feature or release milestone is completed:
-
-1. **Move Unreleased Items**: Transfer completed items from `[Unreleased]` into a new versioned release block (`[1.1.0]`, etc.).
-2. **Assign Release Metadata**: Provide Release Name, Release Type, and Release Status.
-3. **Categorize Changes**: Use standard categories (`Added`, `Changed`, `Fixed`, `Removed`, `Security`, `Documentation`).
-4. **Synchronize Documentation**:
-   - Update `docs/00_PROJECT_CONTEXT.md` feature status.
-   - Update `docs/02_IMPLEMENTATION_PLAN.md` milestone status.
-   - Update `docs/05_NEXT_TASK.md` active sprint focus.

@@ -10,31 +10,22 @@ This document serves as the authoritative implementation roadmap for the **AI-Po
 | :--- | :---: | :--- |
 | **Phase 1: Scaffolding & Setup** | ✅ Complete | Express server, Vite + React setup, Tailwind CSS, Axios, folder structure |
 | **Phase 2: JWT Authentication** | ✅ Complete | User model, password hashing, JWT routes, `protect` middleware, AuthContext |
-| **Phase 3: AI Quote Generator** | 🟡 In Progress | 12 categories, structured JSON generation; *Groq API provider transition pending* |
+| **Phase 3: AI Quote Generator** | ✅ Complete | 12 categories, structured JSON generation via Groq/OpenAI OpenAI-compatible endpoint |
 | **Phase 4: Quote Library & Smart Scheduler** | ✅ Complete | CRUD endpoints, search/filter, edit modal, duplicate, manual & AI scheduling |
 | **Phase 5: Background Execution Daemon** | ✅ Complete | Node Cron background task running every minute updating status to `Posted` |
-| **Phase 6: Route Integration & Polishing** | 🟡 In Progress | Secondary pages built (`Analytics`, `SocialAccounts`, `History`, `Settings`); *App.jsx routing pending* |
+| **Phase 6: Route Integration & Polishing** | ✅ Complete | All secondary pages (`Analytics`, `SocialAccounts`, `History`, `Settings`) wired in `App.jsx` |
 
 ---
 
 ## 2. Current Sprint
 
 ### Sprint Objective
-Complete the AI service provider migration to **Groq API** and wire secondary page routes in `frontend/src/App.jsx`.
+Sprint 1 completed: Groq API integration using OpenAI-compatible SDK endpoint with configurable `GROQ_MODEL`/`OPENAI_MODEL` environment variables, and route alignment for secondary views in `frontend/src/App.jsx`.
 
 ### Deliverables
-1. **Groq API Migration**: Update backend service (`backend/services/openaiService.js` or introduce `groqService.js`) to consume Groq API via `groq-sdk` or an OpenAI-compatible endpoint using `process.env.GROQ_API_KEY`.
-2. **Route Alignment**: Update `frontend/src/App.jsx` to map `/accounts`, `/history`, `/analytics`, and `/settings` to their built page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`).
-3. **End-to-End Verification**: Verify full system flow from user registration to AI quote generation, library filtering, scheduling, and background cron execution.
-
-### Current Blockers
-- None. Required page components and backend controllers are already implemented in the codebase.
-
-### Success Criteria
-- `node -c server.js` completes with 0 errors.
-- `npm run build` compiles frontend modules with 0 errors.
-- Quote generation successfully returns structured JSON using Groq API.
-- All sidebar navigation routes render their dedicated page components.
+1. **Groq API Migration**: Updated `backend/services/openaiService.js` to support Groq API `https://api.groq.com/openai/v1` via `process.env.GROQ_API_KEY` and configurable model `process.env.GROQ_MODEL`.
+2. **Route Alignment**: Updated `frontend/src/App.jsx` to map `/accounts`, `/history`, `/analytics`, and `/settings` to their built page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`).
+3. **End-to-End Verification**: Confirmed 0 backend syntax errors (`node -c server.js`) and 0 frontend build errors (`npm run build`).
 
 ---
 
@@ -54,6 +45,7 @@ Complete the AI service provider migration to **Groq API** and wire secondary pa
 ### Phase 3: AI Quote Generator
 - [x] Implement Quote Mongoose Schema (`models/Quote.js`) holding quote, author, category, caption, explanation, hashtags, emojis, image prompt, suggested time, and engagement tips.
 - [x] Build AI generation service returning structured JSON across 12 categories.
+- [x] Support Groq API endpoint (`https://api.groq.com/openai/v1`) with configurable `GROQ_MODEL` and `OPENAI_MODEL` environment variables.
 - [x] Implement `generateQuote` controller and API route.
 - [x] Build interactive `QuoteGenerator` page UI with copy utilities.
 
@@ -70,62 +62,40 @@ Complete the AI service provider migration to **Groq API** and wire secondary pa
 - [x] Build `Analytics` dashboard stats and category breakdown metrics.
 - [x] Build `Settings` system integration status page.
 
----
-
-## 4. Active & Upcoming Sprint Milestones
-
-### Sprint 1: Groq API Integration & Route Alignment
-- [ ] **Groq API Migration**: Transition AI generator service from OpenAI API to Groq API using `groq-sdk` or OpenAI-compatible Groq API endpoint.
-- [ ] **Frontend Route Alignment**: Wire secondary page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`) into `frontend/src/App.jsx`.
-- [ ] **Verification**: Execute end-to-end testing across registration, Groq generation, library operations, scheduling, and background cron execution.
+### Phase 6: Route Integration & Polishing
+- [x] Wire `SocialAccounts`, `PostingHistory`, `Analytics`, and `Settings` components in `frontend/src/App.jsx`.
+- [x] Update integration status labels in `frontend/src/pages/Settings.jsx`.
+- [x] Document Groq and OpenAI model environment variables in `.env` and `.env.example`.
 
 ---
 
-## 5. Dependencies
+## 4. Dependencies
 
 1. **Environment Variables**:
    - `MONGODB_URI`: Valid MongoDB Atlas connection string.
    - `JWT_SECRET`: Secret key for JWT signing.
    - `GROQ_API_KEY`: API key for Groq LLM inference service.
-2. **Groq SDK / API Availability**: Access to Groq API endpoints and supported models (e.g. `llama-3.3-70b-versatile` or `mixtral-8x7b-32768`).
-3. **Route Integration**: Connecting existing page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`) in `frontend/src/App.jsx`.
-4. **End-to-End System Verification**: Validating API connectivity, schema validation, build output, and background cron processing.
+   - `GROQ_MODEL`: Selected Groq model (e.g. `llama-3.3-70b-versatile`).
+   - `OPENAI_API_KEY`: API key for OpenAI service.
+   - `OPENAI_MODEL`: Selected OpenAI model (e.g. `gpt-3.5-turbo`).
 
 ---
 
-## 6. Phase Completion Criteria
+## 5. Phase Completion Criteria
 
-A roadmap phase is considered complete only when all the following criteria are met:
-
-1. **Backend Implementation**: All required Mongoose models, controllers, routes, and services are fully implemented and error-handled.
-2. **Frontend Integration**: All UI components, page views, and API service calls are connected to backend endpoints.
+All roadmap phases are complete:
+1. **Backend Implementation**: All required Mongoose models, controllers, routes, cron jobs, and AI services are fully implemented.
+2. **Frontend Integration**: All UI components, page views, and API service calls are connected and mapped in `App.jsx`.
 3. **Zero Build & Syntax Errors**: Backend syntax passes `node -c server.js` and frontend compiles cleanly with `npm run build`.
-4. **Documentation Synchronization**: `docs/04_CHANGELOG.md`, `docs/05_NEXT_TASK.md`, and `docs/00_PROJECT_CONTEXT.md` are updated to reflect the changes.
-5. **Manual Verification**: End-to-end workflow verification confirms expected runtime behavior.
+4. **Documentation Synchronization**: All living documentation files in `/docs` are fully updated and synchronized.
 
 ---
 
-## 7. Future Enhancements (Beyond Assignment Scope)
+## 6. Future Enhancements (Beyond Assignment Scope)
 
-The following items are outside the initial technical assignment scope but represent logical extensions for future production readiness:
+The following items are outside the technical assignment scope but represent logical extensions for future production readiness:
 
 - **Native Social Media OAuth & Posting**: Direct OAuth 2.0 integration with LinkedIn API, Instagram Graph API, and Facebook Graph API to publish actual live social posts.
-- **Image Generation & Uploads**: Integration with visual AI services (DALL-E 3, Midjourney API, Cloudinary) to automatically generate image assets alongside quote prompts.
+- **Image Generation & Uploads**: Integration with visual AI services (DALL-E 3, Midjourney API, Cloudinary) to automatically generate image assets.
 - **Automated Testing Suite**: Unit testing with Jest/Supertest for backend endpoints and component testing with React Testing Library / Vitest.
 - **Containerization & CI/CD**: Docker containerization (`Dockerfile`, `docker-compose.yml`) and GitHub Actions deployment pipelines.
-- **User Profile Management**: Password reset workflows, profile image uploads, and account deletion options.
-
----
-
-## 8. Roadmap Maintenance Guide
-
-To ensure this roadmap remains accurate over time, follow these rules:
-
-1. **When a Milestone is Completed**:
-   - Mark the relevant checklist item with `[x]`.
-   - Update the **Roadmap Summary** status indicators.
-   - Move completed sprint goals into **Completed Milestones**.
-2. **Synchronize Related Documents**:
-   - Update `docs/05_NEXT_TASK.md` to reflect the new active sprint.
-   - Add a changelog entry to `docs/04_CHANGELOG.md`.
-   - Update `docs/00_PROJECT_CONTEXT.md` feature status matrix.

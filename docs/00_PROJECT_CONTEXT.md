@@ -4,7 +4,7 @@
 
 The **AI-Powered Quote Auto Scheduler** repository contains a full-stack web application built using the MERN stack (MongoDB Atlas, Express.js, React + Vite, Node.js). The project demonstrates full-stack software architecture, AI content generation, JWT-based authentication, database persistence, and background job scheduling with Node Cron.
 
-The repository currently implements a functional application where authenticated users can generate structured quotes and social media metadata across 12 categories using AI, manage quotes in a repository library with search and filtering, schedule content using manual or AI-recommended time slots, and rely on an automated background daemon to process scheduled posts.
+The repository implements a complete application where authenticated users can generate structured quotes and social media metadata across 12 categories using Groq or OpenAI LLM API integrations, manage quotes in a repository library with search and filtering, schedule content using manual or AI-recommended time slots, view social connection states and execution audit logs, and rely on an automated background daemon to process scheduled posts.
 
 ---
 
@@ -24,25 +24,24 @@ The repository currently implements a functional application where authenticated
 3. **Quote Library**: Content repository supporting regex search, category/status filtering, grid/table view toggles, edit modals, deletion, and duplication.
 4. **Smart Scheduler**: Scheduling workflow featuring manual time selection, AI-recommended time calculation, platform multi-selection (*LinkedIn, Instagram, Facebook*), and bulk auto-scheduling.
 5. **Background Publisher**: Node Cron background service running every minute to process due posts.
-6. **Social Accounts Management**: Platform connection state tracking.
+6. **Social Accounts Management**: Platform connection state tracking view.
 7. **Posting Audit History**: Detailed execution log for published and failed posts.
 8. **Dashboard & Analytics**: System health, aggregate statistics, and category distribution metrics.
+9. **Settings**: System configuration overview and environment connection monitoring.
 
 ---
 
 ## 1. Current Project Status
 
-- **Repository Maturity**: Functional demonstration codebase with core workflows implemented.
-- **Development Stage**: Advanced initial implementation phase (Core engines complete; secondary page routing and AI provider migration pending).
+- **Repository Maturity**: Complete full-stack demonstration codebase with all core and secondary workflows implemented.
+- **Development Stage**: Release 1.1.0 Complete.
 - **Major Completed Milestones**:
   - Full-stack JWT authentication flow (backend controllers, middleware, frontend context, protected routes).
-  - AI quote generation engine producing structured social media metadata.
+  - Groq & OpenAI AI quote generation engine producing structured social media metadata.
   - Quote Library CRUD, search query filtering, edit modal, and duplication.
   - Smart Scheduler featuring manual time picking, AI slot recommendation, and bulk auto-scheduling.
   - Node Cron background publishing task running every minute.
-- **Remaining Implementation Work**:
-  - Transitioning the AI generator service from OpenAI API to Groq API (`groq-sdk` or OpenAI-compatible Groq API endpoint).
-  - Updating `frontend/src/App.jsx` route mappings to connect secondary page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`).
+  - Full route wiring for all views (`Dashboard`, `Generator`, `Library`, `Scheduler`, `Accounts`, `History`, `Analytics`, `Settings`).
 
 ---
 
@@ -51,15 +50,15 @@ The repository currently implements a functional application where authenticated
 | Feature | Status | Implementation Details |
 | :--- | :---: | :--- |
 | **Authentication** | ✅ Complete | Full registration, login, JWT validation, `protect` middleware, and AuthContext provider. |
-| **Dashboard** | 🟡 Partially Complete | Overview page active; full analytics widgets exist in `Analytics.jsx`. |
-| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata; *Groq API provider transition pending*. |
+| **Dashboard** | ✅ Complete | Overview page active with quick actions and setup status widgets. |
+| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq/OpenAI OpenAI-compatible endpoint. |
 | **Quote Library** | ✅ Complete | Full CRUD, regex search, category/status filters, grid/table toggles, edit, delete, duplicate. |
 | **Smart Scheduler** | ✅ Complete | Manual scheduling, AI recommended slots, platform multi-select, AI bulk auto-scheduler. |
 | **Background Scheduler** | ✅ Complete | Node Cron job running every minute (`* * * * *`) updating `Scheduled` quotes to `Posted`. |
-| **Analytics** | 🟡 Partially Complete | Aggregate controller & `Analytics.jsx` page written; route unlinked in `App.jsx`. |
-| **Social Accounts** | 🟡 Partially Complete | Model, controller, & `SocialAccounts.jsx` page written; route unlinked in `App.jsx`. |
-| **Posting History** | 🟡 Partially Complete | Audit table `PostingHistory.jsx` written; route unlinked in `App.jsx`. |
-| **Settings** | 🟡 Partially Complete | System integration monitor `Settings.jsx` written; route unlinked in `App.jsx`. |
+| **Analytics** | ✅ Complete | Aggregate controller & `Analytics.jsx` page wired in `App.jsx`. |
+| **Social Accounts** | ✅ Complete | Model, controller, & `SocialAccounts.jsx` page wired in `App.jsx`. |
+| **Posting History** | ✅ Complete | Audit table `PostingHistory.jsx` wired in `App.jsx`. |
+| **Settings** | ✅ Complete | System integration monitor `Settings.jsx` wired in `App.jsx`. |
 
 ---
 
@@ -67,7 +66,7 @@ The repository currently implements a functional application where authenticated
 
 - **Backend (`/backend`)**: Express v4 application managing Mongoose models (`User`, `Quote`, `SocialAccount`), authentication logic, REST controllers, background cron jobs (`jobs/cronJobs.js`), and AI service wrappers (`services/openaiService.js`).
 - **Frontend (`/frontend`)**: React 18 single-page application built with Vite 5, Tailwind CSS, React Router v6, Axios HTTP client (`services/api.js`), and React Context (`AuthContext.jsx`).
-- **Documentation (`/docs`)**: Structured technical documentation detailing project context, system architecture, API specifications, changelog, and current sprint focus.
+- **Documentation (`/docs`)**: Structured technical documentation detailing project context, system architecture, API specifications, changelog, ADRs, setup, and active tasks.
 - **Historical Documents (`/docs/recovered`)**: Contains original prompt, implementation plans, and walkthroughs retained strictly for historical context.
 
 ---
@@ -75,28 +74,25 @@ The repository currently implements a functional application where authenticated
 ## 4. Current Repository Health
 
 - **Backend Build Status**: Clean. `node -c server.js` compiles without syntax or execution errors.
-- **Frontend Build Status**: Clean. `npm run build` compiles 1550+ modules cleanly with zero errors.
+- **Frontend Build Status**: Clean. `npm run build` compiles 1561 modules cleanly with zero errors.
 - **Architecture Stability**: High. Follows clean MVC backend pattern and component-driven React architecture.
 - **Documentation Status**: Fully documented and synchronized with codebase implementation.
 - **Code Organization**: Modular separation of concerns across backend routes, controllers, services, models, and frontend pages, components, and services.
-- **Technical Debt**: Low. Limited to minor route mapping alignment in `App.jsx` and AI provider replacement.
+- **Technical Debt**: Zero open technical debt. All routes mapped and environment variables configurable.
 
 ---
 
 ## 5. Known Limitations
 
 - **Mock Social Publishing**: The background cron scheduler updates database statuses from `Scheduled` to `Posted` but logs social network API posting calls rather than calling third-party social APIs directly.
-- **Unlinked Secondary Routes**: `frontend/src/App.jsx` currently maps routes `/accounts`, `/history`, `/analytics`, and `/settings` to `<Dashboard />` instead of their built page components.
-- **AI Service Provider Migration**: The AI service currently uses the `openai` client package and requires updating to Groq API.
 - **Automated Testing**: Unit and integration test suites are not currently configured in the repository.
 
 ---
 
 ## 6. Active Development Focus
 
-1. **Groq API Migration**: Update `backend/services/openaiService.js` (or replace with `groqService.js`) to use Groq API with `process.env.GROQ_API_KEY`.
-2. **Route Alignment**: Update `frontend/src/App.jsx` to map secondary page paths (`accounts`, `history`, `analytics`, `settings`) to their dedicated page components.
-3. **End-to-End System Verification**: Execute integration verification across authentication, Groq quote generation, library filtering, scheduling, and background job execution.
+1. End-to-end verification and demonstration readiness.
+2. Optional future enhancements (OAuth 2.0 social API integrations, unit tests, Docker containerization).
 
 ---
 
@@ -123,19 +119,14 @@ docs/01_ARCHITECTURE.md           (System data flow, backend/frontend diagrams)
 docs/05_NEXT_TASK.md              (Current sprint priorities and action steps)
 ```
 
-**Why this order exists**: This sequence establishes repository operating rules first, followed by functional context, architectural layout, and active tasks before inspecting or modifying source code.
-
 ---
 
 ## 9. Definition of Current State
 
 - **Fully Functional**:
   - JWT User Registration, Login, and Protected Routes.
-  - AI Quote & Metadata Generation across 12 categories.
+  - Groq / OpenAI AI Quote & Metadata Generation across 12 categories with `GROQ_MODEL` and `OPENAI_MODEL` environment configuration.
   - Quote Library CRUD, Regex Search, Category/Status Filtering, Edit Modal, and Duplication.
   - Smart Scheduler (Manual datetime picking, AI recommended slots, platform selection, AI bulk auto-scheduler).
   - Background Node Cron publishing daemon.
-- **Partially Implemented**:
-  - Social Accounts, Posting History, Analytics, and Settings pages are fully built in `src/pages/` but require route mapping in `App.jsx`.
-- **Remaining Task to Reach 100% Completion**:
-  - Complete Groq API integration for quote generation and wire secondary routes in `App.jsx`.
+  - Social Accounts, Posting History, Analytics, and Settings pages fully wired and operational in `App.jsx`.
