@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, Sparkles, Library, CalendarClock, Share2, History, BarChart3, Settings, Bot, LogOut, User as UserIcon } from 'lucide-react';
+import LogoutModal from '../components/LogoutModal';
 
 const MainLayout = () => {
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    setIsLogoutModalOpen(true);
   };
 
   const navigation = [
@@ -20,7 +21,6 @@ const MainLayout = () => {
     { name: 'Smart Scheduler', path: '/scheduler', icon: CalendarClock },
     { name: 'Social Accounts', path: '/accounts', icon: Share2 },
     { name: 'Posting History', path: '/history', icon: History },
-    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -103,9 +103,14 @@ const MainLayout = () => {
 
         {/* Dynamic Page Content */}
         <main class="p-6 flex-1">
-          <Outlet />
+          <Outlet context={{ requestLogout: () => setIsLogoutModalOpen(true) }} />
         </main>
       </div>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+      />
     </div>
   );
 };
