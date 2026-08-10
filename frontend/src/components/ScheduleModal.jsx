@@ -78,6 +78,7 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
   };
 
   return (
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
       <div class="glass-panel w-full max-w-lg rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
         {/* Header */}
@@ -212,6 +213,7 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
           </div>
         </form>
       </div>
+    </div>
     </div>
   );
 };

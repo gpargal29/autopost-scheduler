@@ -137,19 +137,21 @@ const QuoteGenerator = () => {
               </div>
             </div>
 
-            {/* Custom Topic */}
+            {/* Target Audience */}
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                2. Specific Topic / Keyword (Optional)
+                2. Target Audience
               </label>
               <input
                 type="text"
-                value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
-                placeholder="e.g. Overcoming burnout, Morning routines"
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+                placeholder="e.g. Founders, Creatives, Students"
                 class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 text-xs"
               />
             </div>
+
+            
 
             {/* Tone Selector */}
             <div>
@@ -174,19 +176,19 @@ const QuoteGenerator = () => {
               </div>
             </div>
 
-            {/* Target Audience */}
+            {/* Custom Topic */}
             <div>
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                4. Target Audience
+                4. Specific Keyword (Optional)
               </label>
               <input
                 type="text"
-                value={targetAudience}
-                onChange={(e) => setTargetAudience(e.target.value)}
-                placeholder="e.g. Founders, Creatives, Students"
+                value={customTopic}
+                onChange={(e) => setCustomTopic(e.target.value)}
+                placeholder="e.g. Overcoming burnout, Morning routines"
                 class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 text-xs"
               />
-            </div>
+            </div>            
 
             {/* Error Message */}
             {error && (
@@ -228,7 +230,7 @@ const QuoteGenerator = () => {
                   Category: {generatedQuote.category}
                 </span>
                 <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                  Saved to Database
+                  Added to Library
                 </span>
               </div>
 

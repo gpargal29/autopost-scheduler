@@ -9,38 +9,28 @@ This document serves as the authoritative implementation roadmap for the **AI-Po
 | Phase / Feature Module | Status | Core Deliverables |
 | :--- | :---: | :--- |
 | **Phase 1: Scaffolding & Setup** | ✅ Complete | Express server, Vite + React setup, Tailwind CSS, Axios, folder structure |
-| **Phase 2: JWT Authentication** | ✅ Complete | User model, password hashing, JWT routes, `protect` middleware, AuthContext |
-| **Phase 3: AI Quote Generator** | ✅ Complete | 12 categories, structured JSON generation via Groq/OpenAI OpenAI-compatible endpoint |
-| **Phase 4: Quote Library & Smart Scheduler** | ✅ Complete | CRUD endpoints, search/filter, edit modal, duplicate, manual & AI scheduling |
-| **Phase 5: Background Execution Daemon** | ✅ Complete | Node Cron background task running every minute updating status to `Posted` |
-| **Phase 6: Route Integration & Polishing** | ✅ Complete | All secondary pages (`Analytics`, `SocialAccounts`, `History`, `Settings`) wired in `App.jsx` |
+| **Phase 2: JWT Authentication** | ✅ Complete | User model, password hashing, JWT routes, `protect` middleware, AuthContext, password toggle |
+| **Phase 3: AI Quote Generator** | ✅ Complete | 12 categories, structured JSON generation via Groq API (`llama-3.3-70b-versatile`) |
+| **Phase 4: Quote Library & Smart Scheduler** | 🟡 Partial | CRUD endpoints, search/filter, edit modal, duplicate, manual scheduling complete; AI single & bulk scheduling use hardcoded slot rules |
+| **Phase 5: Background Execution Daemon** | ✅ Complete | Node Cron background task running every minute updating status to `Posted` in DB |
+| **Phase 6: Dashboard & Settings Polish** | ✅ Complete | Analytics merged into `Dashboard.jsx`, Settings redesigned into SaaS config view, global `LogoutModal.jsx` extracted |
+| **Phase 7: Dynamic AI Scheduling** | ⏳ Pending | Parsing quote's AI-generated `suggestedPostingTime` for single & bulk scheduling |
+| **Phase 8: Native Social OAuth & Publishing**| ⏳ Pending | Real OAuth 2.0 flows, access token storage, and live API publishing (LinkedIn, Meta APIs) |
 
 ---
 
-## 2. Current Sprint
-
-### Sprint Objective
-Sprint 1 completed: Groq API integration using OpenAI-compatible SDK endpoint with configurable `GROQ_MODEL`/`OPENAI_MODEL` environment variables, and route alignment for secondary views in `frontend/src/App.jsx`.
-
-### Deliverables
-1. **Groq API Migration**: Updated `backend/services/openaiService.js` to support Groq API `https://api.groq.com/openai/v1` via `process.env.GROQ_API_KEY` and configurable model `process.env.GROQ_MODEL`.
-2. **Route Alignment**: Updated `frontend/src/App.jsx` to map `/accounts`, `/history`, `/analytics`, and `/settings` to their built page components (`SocialAccounts`, `PostingHistory`, `Analytics`, `Settings`).
-3. **End-to-End Verification**: Confirmed 0 backend syntax errors (`node -c server.js`) and 0 frontend build errors (`npm run build`).
-
----
-
-## 3. Completed Milestones
+## 2. Completed Milestones
 
 ### Phase 1: Project Initialization & Scaffolding
 - [x] Configure backend directory structure (`config`, `controllers`, `routes`, `models`, `services`, `middleware`, `jobs`, `utils`).
 - [x] Configure frontend directory structure with Vite, React Router, Tailwind CSS, and Axios.
-- [x] Establish database connection module (`config/db.js`) and global Express error handling (`middleware/errorHandler.js`).
+- [x] Establish database connection module (`config/db.js`) with explicit database name logging and global Express error handling (`middleware/errorHandler.js`).
 
 ### Phase 2: JWT Authentication
 - [x] Implement User Mongoose Schema (`models/User.js`) with bcrypt password hashing and `matchPassword` method.
 - [x] Implement Auth Controller (`controllers/authController.js`) for `registerUser`, `loginUser`, and `getMe`.
 - [x] Build JWT validation middleware (`middleware/authMiddleware.js`).
-- [x] Implement frontend `AuthContext`, `ProtectedRoute`, `Login`, and `Register` views.
+- [x] Implement frontend `AuthContext`, `ProtectedRoute`, `Login` (with password visibility toggle), and `Register` views.
 
 ### Phase 3: AI Quote Generator
 - [x] Implement Quote Mongoose Schema (`models/Quote.js`) holding quote, author, category, caption, explanation, hashtags, emojis, image prompt, suggested time, and engagement tips.
@@ -49,53 +39,46 @@ Sprint 1 completed: Groq API integration using OpenAI-compatible SDK endpoint wi
 - [x] Implement `generateQuote` controller and API route.
 - [x] Build interactive `QuoteGenerator` page UI with copy utilities.
 
-### Phase 4: Quote Library & Smart Scheduler
+### Phase 4: Quote Library & Manual Scheduling
 - [x] Implement Quote CRUD endpoints, regex search, category/status filters, edit, delete, and duplicate handlers.
 - [x] Build `QuoteLibrary` view with Grid and Table view toggles.
-- [x] Build `EditQuoteModal` and `ScheduleModal` components (manual datetime picking + AI recommended slot calculation).
-- [x] Build `SmartScheduler` view with visual timeline, pending queue, and AI bulk auto-scheduler algorithm.
+- [x] Build `EditQuoteModal` and `ScheduleModal` components (manual datetime picking & platform multi-select).
+- [x] Build `SmartScheduler` view with visual timeline and pending queue.
 
-### Phase 5: Background Scheduler & Social Integrations
-- [x] Implement Node Cron background daemon (`jobs/cronJobs.js`) running every minute to transition due scheduled quotes to `Posted`.
-- [x] Build Social Accounts model, controller, and `SocialAccounts` view.
+### Phase 5: Background Scheduler Daemon
+- [x] Implement Node Cron background daemon (`jobs/cronJobs.js`) running every minute (`* * * * *`) to transition due `Scheduled` quotes to `Posted` in MongoDB.
+- [x] Build `SocialAccount` model, controller, and `SocialAccounts` view (tracks `isConnected` DB flag).
 - [x] Build `PostingHistory` audit log view.
-- [x] Build `Analytics` dashboard stats and category breakdown metrics.
-- [x] Build `Settings` system integration status page.
 
-### Phase 6: Route Integration & Polishing
-- [x] Wire `SocialAccounts`, `PostingHistory`, `Analytics`, and `Settings` components in `frontend/src/App.jsx`.
-- [x] Update integration status labels in `frontend/src/pages/Settings.jsx`.
-- [x] Document Groq and OpenAI model environment variables in `.env` and `.env.example`.
+### Phase 6: Dashboard Consolidation, Settings & UI Polish
+- [x] **Dashboard & Analytics Consolidation**: Consolidated standalone `Analytics.jsx` page components (KPIs and Category Breakdown) directly into `Dashboard.jsx`. Removed obsolete `/analytics` route and file.
+- [x] **Settings Redesign**: Redesigned `Settings.jsx` into a clean SaaS configuration page featuring Account Profile, embedded AI engine info (`Groq`), local preferences toggles, and compact System Health monitor bar.
+- [x] **Global Logout Confirmation**: Extracted `LogoutModal.jsx` into a global reusable component and wired it across Settings and main layout sidebar.
+- [x] **Login UX**: Added password visibility toggle (`Eye`/`EyeOff` icons) on `Login.jsx`.
 
 ---
 
-## 4. Dependencies
+## 3. Active Roadmap Priorities
+
+The following features represent the active application development sequence:
+
+1. **Priority 1: Dynamic AI Single Scheduling Slot Consumption**:
+   - Update `ScheduleModal.jsx` to parse and apply the quote's stored `suggestedPostingTime` string rather than falling back to hardcoded `09:30 AM`.
+2. **Priority 2: Dynamic AI Bulk Scheduling Slot Optimization**:
+   - Update `SmartScheduler.jsx` (`handleBulkAutoSchedule`) to calculate schedule slots based on quote-specific AI recommendations rather than a static `const slots = [9, 14, 19]` array.
+3. **Priority 3: Native Social Account OAuth 2.0 Authorization**:
+   - Implement real OAuth authorization URL generation, redirect callbacks, and secure access token / refresh token storage in Mongoose `SocialAccount` documents for LinkedIn, Instagram, and Facebook.
+4. **Priority 4: Live Social Platform Publishing APIs**:
+   - Replace simulated cron publishing logs in `cronJobs.js` with live HTTP API client integrations (LinkedIn UGC Post API, Meta Graph API for Instagram/Facebook).
+
+---
+
+## 4. Dependencies & Environment Variables
 
 1. **Environment Variables**:
    - `MONGODB_URI`: Valid MongoDB Atlas connection string.
-   - `JWT_SECRET`: Secret key for JWT signing.
+   - `JWT_SECRET`: Secret key for JWT signing (`30d` expiration).
    - `GROQ_API_KEY`: API key for Groq LLM inference service.
    - `GROQ_MODEL`: Selected Groq model (e.g. `llama-3.3-70b-versatile`).
-   - `OPENAI_API_KEY`: API key for OpenAI service.
+   - `OPENAI_API_KEY`: API key for OpenAI fallback service.
    - `OPENAI_MODEL`: Selected OpenAI model (e.g. `gpt-3.5-turbo`).
-
----
-
-## 5. Phase Completion Criteria
-
-All roadmap phases are complete:
-1. **Backend Implementation**: All required Mongoose models, controllers, routes, cron jobs, and AI services are fully implemented.
-2. **Frontend Integration**: All UI components, page views, and API service calls are connected and mapped in `App.jsx`.
-3. **Zero Build & Syntax Errors**: Backend syntax passes `node -c server.js` and frontend compiles cleanly with `npm run build`.
-4. **Documentation Synchronization**: All living documentation files in `/docs` are fully updated and synchronized.
-
----
-
-## 6. Future Enhancements (Beyond Assignment Scope)
-
-The following items are outside the technical assignment scope but represent logical extensions for future production readiness:
-
-- **Native Social Media OAuth & Posting**: Direct OAuth 2.0 integration with LinkedIn API, Instagram Graph API, and Facebook Graph API to publish actual live social posts.
-- **Image Generation & Uploads**: Integration with visual AI services (DALL-E 3, Midjourney API, Cloudinary) to automatically generate image assets.
-- **Automated Testing Suite**: Unit testing with Jest/Supertest for backend endpoints and component testing with React Testing Library / Vitest.
-- **Containerization & CI/CD**: Docker containerization (`Dockerfile`, `docker-compose.yml`) and GitHub Actions deployment pipelines.

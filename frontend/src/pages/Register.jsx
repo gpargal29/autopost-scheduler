@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Bot, User, Mail, Lock, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { Bot, User, Mail, Lock, UserPlus, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const { register } = useAuth();
@@ -15,12 +18,16 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !confirmPassword) {
       setFormError('Please fill in all required fields');
       return;
     }
     if (password.length < 6) {
       setFormError('Password must be at least 6 characters long');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setFormError('Passwords do not match');
       return;
     }
 
@@ -102,15 +109,50 @@ const Register = () => {
             <div class="relative">
               <Lock class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min. 6 characters"
-                class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                class="w-full pl-11 pr-12 py-3 bg-slate-900/90 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
                 required
               />
-            </div>
-          </div>
+              <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-400 transition-colors"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff class="w-4 h-4" /> : <Eye class="w-4 h-4" />}
+            </button> 
+            </div>           
+          </div> 
+
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              Confirm Password
+            </label>
+            <div class="relative">
+              <Lock class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                class="w-full pl-11 pr-12 py-3 bg-slate-900/90 border border-slate-800 rounded-xl text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                required
+              />
+              <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-400 transition-colors"
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            >
+              {showConfirmPassword ? <EyeOff class="w-4 h-4" /> : <Eye class="w-4 h-4" />}
+            </button> 
+            </div>           
+          </div>               
+                
 
           <button
             type="submit"

@@ -23,7 +23,6 @@
 ./frontend/src/App.jsx
 ./frontend/src/pages
 ./frontend/src/pages/QuoteLibrary.jsx
-./frontend/src/pages/Analytics.jsx
 ./frontend/src/pages/SocialAccounts.jsx
 ./frontend/src/pages/Dashboard.jsx
 ./frontend/src/pages/Login.jsx

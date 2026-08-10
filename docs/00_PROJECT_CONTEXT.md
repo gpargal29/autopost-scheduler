@@ -49,15 +49,16 @@ The repository implements a complete application where authenticated users can g
 
 | Feature | Status | Implementation Details |
 | :--- | :---: | :--- |
-| **Authentication** | ✅ Complete | Full registration, login, JWT validation, `protect` middleware, and AuthContext provider. |
-| **Dashboard & Analytics** | ✅ Complete | Unified Dashboard command center with KPIs, Category Breakdown, Recent Activity, & Scheduled Queue (`/api/analytics/dashboard`). |
-| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq/OpenAI OpenAI-compatible endpoint. |
+| **Authentication** | ✅ Complete | Full registration, login, password visibility toggle, JWT validation, `protect` middleware, AuthContext. |
+| **Dashboard & Analytics** | ✅ Complete | Unified Dashboard command center with KPIs, Category Breakdown, Recent Activity, & Scheduled Queue (`Analytics.jsx` merged). |
+| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq API (`llama-3.3-70b-versatile`). |
 | **Quote Library** | ✅ Complete | Full CRUD, regex search, category/status filters, grid/table toggles, edit, delete, duplicate. |
-| **Smart Scheduler** | ✅ Complete | Manual scheduling, AI recommended slots, platform multi-select, AI bulk auto-scheduler. |
-| **Background Scheduler** | ✅ Complete | Node Cron job running every minute (`* * * * *`) updating `Scheduled` quotes to `Posted`. |
-| **Social Accounts** | ✅ Complete | Model, controller, & `SocialAccounts.jsx` page wired in `App.jsx`. |
-| **Posting History** | ✅ Complete | Audit table `PostingHistory.jsx` wired in `App.jsx`. |
-| **Settings** | ✅ Complete | System integration monitor `Settings.jsx` wired in `App.jsx`. |
+| **Smart Scheduler** | 🟡 Partial | Manual scheduling & internal cron complete; AI single & bulk scheduling use hardcoded slot rules (`09:30 AM` / `[9, 14, 19]`). |
+| **Background Scheduler** | ✅ Complete | Internal Node Cron job running every minute (`* * * * *`) updating `Scheduled` quotes to `Posted` in DB. |
+| **Social Accounts** | 🟡 Partial | Stores `isConnected` boolean flag in DB for LinkedIn, Instagram, Facebook; no OAuth 2.0 authorization or access tokens. |
+| **Social Publishing** | 🔴 Simulated | Background cron job updates DB status to `Posted`; live external API publishing (LinkedIn, Instagram, Facebook) is simulated by design. |
+| **Posting History** | ✅ Complete | Audit table `PostingHistory.jsx` displaying published/failed DB records. |
+| **Settings** | ✅ Complete | Redesigned SaaS Settings page with Account, AI Engine status, local preferences toggles, and System Health bar. |
 
 ---
 
@@ -81,10 +82,10 @@ The repository implements a complete application where authenticated users can g
 
 ---
 
-## 5. Known Limitations
+## 5. Known Limitations & Out-of-Scope Items
 
-- **Mock Social Publishing**: The background cron scheduler updates database statuses from `Scheduled` to `Posted` but logs social network API posting calls rather than calling third-party social APIs directly.
-- **Automated Testing**: Unit and integration test suites are not currently configured in the repository.
+- **Simulated Social Media Publishing**: LinkedIn, Instagram, and Facebook connections track an `isConnected` flag in MongoDB. Live OAuth 2.0 authorization, token exchange, and platform publishing APIs are not implemented; background cron publishing updates DB status and logs execution to stdout.
+- **AI Scheduler Slot Consumption**: While the AI engine generates and stores a `suggestedPostingTime` string on each quote, scheduling modals currently use hardcoded/rule-based slot rules (`09:30 AM` for single schedules, `[9, 14, 19]` for bulk schedules) rather than dynamically parsing the quote's AI recommendation.
 
 ---
 

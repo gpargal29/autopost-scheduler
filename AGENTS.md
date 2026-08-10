@@ -126,16 +126,16 @@ Documentation is an integral part of this project. Whenever code or features are
 
 | Feature | Status | Details |
 | :--- | :---: | :--- |
-| **Authentication** | ✅ Complete | JWT Register/Login, bcrypt hashing, `protect` middleware, AuthContext |
-| **Dashboard** | 🟡 Partial | Overview page active; full stats widgets in `Analytics.jsx` |
-| **AI Quote Generator** | ✅ Complete | 12 categories, structured JSON generation; *Groq API transition ready* |
+| **Authentication** | ✅ Complete | JWT Register/Login, password visibility toggle, bcrypt hashing, `protect` middleware, AuthContext |
+| **Dashboard & Analytics** | ✅ Complete | Unified Dashboard with KPIs, Category Breakdown, Recent Activity & Queue (`Analytics.jsx` merged) |
+| **AI Quote Generator** | ✅ Complete | 12 categories, structured JSON generation via Groq API (`llama-3.3-70b-versatile`) |
 | **Quote Library** | ✅ Complete | Search, category/status filter, grid/table views, edit, delete, duplicate |
-| **Smart Scheduler** | ✅ Complete | Manual date picker, AI recommended slots, platform selection, bulk auto-scheduler |
-| **Background Scheduler** | ✅ Complete | Node Cron daemon running every minute (`* * * * *`) |
-| **Analytics** | 🟡 Partial | Aggregate controller & `Analytics.jsx` page written |
-| **Social Accounts** | 🟡 Partial | Model, controller, and `SocialAccounts.jsx` page written |
-| **Posting History** | 🟡 Partial | Audit log table `PostingHistory.jsx` written |
-| **Settings** | 🟡 Partial | System integration monitor `Settings.jsx` written |
+| **Smart Scheduler** | 🟡 Partial | Manual scheduling & internal cron complete; AI single & bulk scheduling use hardcoded slot rules |
+| **Background Scheduler** | ✅ Complete | Node Cron daemon running every minute (`* * * * *`) updating `Scheduled` to `Posted` in DB |
+| **Social Accounts** | 🟡 Partial | Model, controller, & `SocialAccounts.jsx` page track `isConnected` boolean; no OAuth 2.0 |
+| **Social Publishing** | 🔴 Simulated | Background cron updates DB status; live external API publishing (LinkedIn/Meta) simulated by design |
+| **Posting History** | ✅ Complete | Audit log table `PostingHistory.jsx` displaying published/failed DB records |
+| **Settings** | ✅ Complete | Redesigned SaaS Settings page with Account, AI Engine info, local preferences & System Health bar |
 
 ---
 

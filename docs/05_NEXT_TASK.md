@@ -1,55 +1,62 @@
-# 05 Next Task & Sprint Handover Guide
+# 05 Next Task & Active Sprint Handover Guide
 
-This document serves as the primary sprint planning and handover guide for the **AI-Powered Quote Auto Scheduler** repository. Any future AI assistant or software engineer resuming work on this codebase should start here to understand active sprint priorities, files affected, dependencies, and completion criteria.
-
----
-
-## 1. Sprint Overview
-
-- **Sprint Name**: Sprint 2 — Demonstration & Integration Audit
-- **Sprint Goal**: Perform full end-to-end integration testing, repository verification, and prepare deployment guidelines.
-- **Current Status**: Active / Planning
-- **Priority**: Normal (All core application roadmap phases complete)
-- **Estimated Scope**: Maintenance and testing.
+This document serves as the primary sprint planning and handover guide for the **AI-Powered Quote Auto Scheduler** repository. Any AI assistant or developer resuming work on this codebase should consult this guide to understand active priorities, feature implementation states, affected files, and completion criteria.
 
 ---
 
-## 2. Current Repository Snapshot
+## 1. Current Repository Snapshot
 
-| Component / Module | Status | Snapshot Note |
+| Feature Module | Implementation State | Technical Note |
 | :--- | :---: | :--- |
-| **Authentication** | ✅ Stable | User registration, login, JWT validation, `protect` middleware, AuthContext |
-| **AI Quote Generator** | ✅ Stable | Groq & OpenAI API integration with `GROQ_MODEL` and `OPENAI_MODEL` env vars |
-| **Quote Library** | ✅ Stable | CRUD, regex search, category/status filters, edit modal, duplicate |
-| **Smart Scheduler** | ✅ Stable | Manual date picker, AI recommended slots, platform select, bulk auto-scheduler |
-| **Background Scheduler**| ✅ Stable | Node Cron daemon running every minute updating `Scheduled` to `Posted` |
-| **Analytics** | ✅ Stable | Controller & `Analytics.jsx` page wired in `App.jsx` |
-| **Social Accounts** | ✅ Stable | Controller & `SocialAccounts.jsx` page wired in `App.jsx` |
-| **Posting History** | ✅ Stable | Controller & `PostingHistory.jsx` page wired in `App.jsx` |
-| **Settings** | ✅ Stable | Controller & `Settings.jsx` page wired in `App.jsx` |
-| **Documentation** | ✅ Stable | Full suite (`AGENTS.md` and `docs/00` through `07`) established |
+| **Authentication** | ✅ Complete | JWT login/register, password visibility toggle (`Login.jsx`), bcrypt, `protect` middleware |
+| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq API (`llama-3.3-70b-versatile`) |
+| **Quote Library (CRUD)** | ✅ Complete | Search, category/status filter, grid/table views, edit, delete, duplicate |
+| **Manual Scheduling** | ✅ Complete | `ScheduleModal.jsx` captures custom datetime & platforms, saving to MongoDB |
+| **Background Scheduler** | ✅ Complete (Internal) | Node Cron daemon (`cronJobs.js`) running every minute (`* * * * *`) updating DB to `Posted` |
+| **Posting History** | ✅ Complete | Audit log table (`PostingHistory.jsx`) displaying published/failed DB records |
+| **Dashboard & Analytics**| ✅ Complete | Consolidated Dashboard (`Dashboard.jsx`) with KPIs, Category breakdown, activity stream |
+| **Settings & Profile** | ✅ Complete | SaaS Settings (`Settings.jsx`) with Account, AI Engine info, local toggles & health bar |
+| **AI Single Scheduling** | 🟡 Partial | UI & DB updates work; uses hardcoded `09:30 AM` rule rather than quote's `suggestedPostingTime` |
+| **AI Bulk Scheduling** | 🟡 Partial | Uses static daily slots `[9, 14, 19]` (`SmartScheduler.jsx`) rather than parsing quote recommendations |
+| **Social Accounts** | 🟡 Partial | `SocialAccounts.jsx` & DB store `isConnected` flag; no real OAuth 2.0 authorization |
+| **Social Publishing** | 🔴 Simulated | Background cron updates DB status; live platform APIs (LinkedIn, Instagram, Facebook) simulated |
 
 ---
 
-## 3. Active Task Objective
+## 2. Active Application Development Priorities
 
-Maintain system stability, perform end-to-end integration checks, and explore optional future production enhancements.
+The following application-level tasks represent the immediate development sequence for the project:
+
+### Priority 1: Dynamic AI Single Scheduling Slot Consumption
+- **Goal**: Update `frontend/src/components/ScheduleModal.jsx` (`handleApplyAIRecommendation`) so that clicking "AI Recommended Time" dynamically parses and applies the quote's AI-generated `suggestedPostingTime` stored in MongoDB, rather than setting a hardcoded `09:30 AM` recommendation.
+- **Files Affected**:
+  - `frontend/src/components/ScheduleModal.jsx`
+  - `frontend/src/utils/dateHelpers.js` (Optional helper if time string parsing is extracted)
+
+### Priority 2: Dynamic AI Bulk Scheduling Slot Optimization
+- **Goal**: Refactor `frontend/src/pages/SmartScheduler.jsx` (`handleBulkAutoSchedule`) so that bulk auto-scheduling computes daily slots using each quote's AI-generated `suggestedPostingTime` instead of relying on a static `const slots = [9, 14, 19];` array.
+- **Files Affected**:
+  - `frontend/src/pages/SmartScheduler.jsx`
+
+### Priority 3: Native Social Account OAuth 2.0 Authorization
+- **Goal**: Implement OAuth 2.0 authentication flows for LinkedIn, Instagram (Meta Graph API), and Facebook. Generate authorization URLs, handle redirect callbacks, and store encrypted access/refresh tokens in MongoDB `SocialAccount` documents.
+- **Files Affected**:
+  - `backend/models/SocialAccount.js`
+  - `backend/controllers/socialController.js`
+  - `backend/routes/socialRoutes.js`
+  - `frontend/src/pages/SocialAccounts.jsx`
+
+### Priority 4: Live Social Media Platform Publishing APIs
+- **Goal**: Integrate official third-party publishing REST APIs inside `backend/jobs/cronJobs.js` (LinkedIn UGC Post API, Meta Graph API for Instagram/Facebook) to publish live social posts when quotes reach `Scheduled` execution time.
+- **Files Affected**:
+  - `backend/jobs/cronJobs.js`
+  - `backend/services/linkedinService.js` [NEW]
+  - `backend/services/metaService.js` [NEW]
 
 ---
 
-## 4. Definition of Done (Completed for Sprint 1)
+## 3. Definition of Done for Active Sprint
 
-1. [x] **Groq API Integration**: Groq API successfully generates structured quotes and social metadata across all 12 categories using `process.env.GROQ_API_KEY` and `process.env.GROQ_MODEL`.
-2. [x] **Route Alignment**: All sidebar links (`/accounts`, `/history`, `/analytics`, `/settings`) correctly render their dedicated page components in `App.jsx`.
-3. [x] **Backend Compilation**: `node -c server.js` runs cleanly with 0 syntax or execution errors.
-4. [x] **Frontend Build**: `npm run build` compiles all React/Vite modules with 0 errors.
-5. [x] **Documentation Sync**: `docs/00_PROJECT_CONTEXT.md`, `docs/02_IMPLEMENTATION_PLAN.md`, `docs/03_API_REFERENCE.md`, `docs/04_CHANGELOG.md`, and `docs/05_NEXT_TASK.md` are updated.
-
----
-
-## 5. Next Sprint Preview
-
-### Future Production Enhancements (Outside Technical Assignment Scope)
-- **Native Social Media OAuth & Posting**: Direct OAuth 2.0 integration with LinkedIn API, Instagram Graph API, and Facebook Graph API.
-- **Automated Testing Setup**: Unit testing with Jest/Supertest for backend endpoints and component testing with React Testing Library / Vitest.
-- **Containerization & CI/CD**: Docker containerization (`Dockerfile`, `docker-compose.yml`) and GitHub Actions deployment pipelines.
+1. **AI Recommendation Consumption**: The scheduler modal and bulk scheduler dynamically parse and respect `suggestedPostingTime` from MongoDB.
+2. **Build Verification**: `node -c server.js` inside `/backend` and `npm run build` inside `/frontend` compile with zero syntax or bundling errors.
+3. **Documentation Sync**: All living markdown documentation files accurately describe the implementation without overstating feature completion.

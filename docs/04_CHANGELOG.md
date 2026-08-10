@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.2.0] - 2026-08-07
+
+- **Release Name**: Dashboard Consolidation, SaaS Settings & UI Refinements
+- **Release Type**: Minor Release
+- **Release Status**: Stable
+
+### Added
+- **Global Logout Modal**: Extracted `frontend/src/components/LogoutModal.jsx` as a reusable component and wired it into `MainLayout.jsx` outlet context for unified logout behavior across Settings and sidebar.
+- **Login Password Visibility Toggle**: Added interactive password show/hide button (`Eye` / `EyeOff` Lucide icons) to `frontend/src/pages/Login.jsx`.
+- **Database Connection Logging**: Added explicit database name logging (`conn.connection.name`) to `backend/config/db.js`.
+
+### Changed / Refactored
+- **Dashboard & Analytics Consolidation**: Merged standalone `Analytics.jsx` components (KPI metrics and Category Distribution) directly into `frontend/src/pages/Dashboard.jsx`. Deleted `Analytics.jsx` file, removed `/analytics` route from `frontend/src/App.jsx`, and updated sidebar navigation.
+- **Settings Page Redesign**: Refactored `frontend/src/pages/Settings.jsx` into a product-focused SaaS settings view featuring Account Profile, embedded read-only AI Engine metadata (`Groq` / `Llama 3`), local preferences toggles (Auto-Save, Notifications), and a streamlined System Health monitor bar.
+
+### Clarified / Documented
+- **Simulated Social Media Publishing**: Documented that social platform connection cards in `SocialAccounts.jsx` track an `isConnected` flag in MongoDB, and the background cron daemon updates MongoDB status to `Posted` without executing live external OAuth 2.0 or platform publishing APIs (LinkedIn, Instagram, Facebook).
+- **Rule-Based Scheduling**: Documented that scheduling modals currently use hardcoded/rule-based slots (`09:30 AM` / `[9, 14, 19]`) rather than parsing the quote's AI-generated `suggestedPostingTime`.
+
+---
+
 ## [1.1.0] - 2026-08-06
 
 - **Release Name**: Groq API & Complete Route Integration

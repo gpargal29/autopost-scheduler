@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  Settings as SettingsIcon, 
-  CheckCircle2, 
-  Loader2, 
+import {
+  Settings as SettingsIcon,
+  CheckCircle2,
+  Loader2,
   User,
   LogOut,
   Brain,
@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useOutletContext } from 'react-router-dom';
 
 const Toggle = ({ checked, onChange }) => (
-  <button 
+  <button
     onClick={() => onChange(!checked)}
     class={`w-10 h-5 rounded-full relative transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${checked ? 'bg-brand-500' : 'bg-slate-700'}`}
   >
@@ -57,11 +57,11 @@ const Settings = () => {
       setHealthStatus('error');
       setLastChecked(new Date());
     }
-    
+
     // Automatically revert to idle state after an additional 4 seconds
     setTimeout(() => {
       setHealthStatus('idle');
-    }, 4000);
+    }, 1000 * 60 * 60 * 1); // 1 hour
   };
 
   return (
@@ -159,7 +159,7 @@ const Settings = () => {
 
               <div class="pt-3 border-t border-slate-800/60">
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">Notifications</p>
-                
+
                 <div class="space-y-3.5">
                   <div class="flex items-center justify-between">
                     <span class="text-xs font-medium text-slate-300">Quote Generated</span>
@@ -214,7 +214,15 @@ const Settings = () => {
             <div class="flex items-center gap-4 shrink-0">
               {lastChecked && (
                 <span class="text-[11px] text-slate-500 font-medium hidden sm:inline">
-                  Last checked: {lastChecked.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  Last checked: {" "}
+                  {`${lastChecked.toLocaleDateString([], {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })} • ${lastChecked.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`}
                 </span>
               )}
 
