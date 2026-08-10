@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getQuotes, updateQuote } from '../services/quoteService';
 import ScheduleModal from '../components/ScheduleModal';
+import { extractTimeComponents } from '../utils/dateHelpers';
 import {
   CalendarClock,
   Sparkles,
@@ -51,28 +52,42 @@ const SmartScheduler = () => {
     setAutoScheduling(true);
 
     try {
-      // Distribute pending quotes into optimal daily slots starting tomorrow at 9:00 AM, 2:00 PM, 7:00 PM
-      const slots = [9, 14, 19];
-      let slotIndex = 0;
-      let dayOffset = 1;
+      const assignedTimestamps = new Set();
 
       for (let i = 0; i < pendingQuotes.length; i++) {
         const quote = pendingQuotes[i];
+
+        // 1. Extract hours & minutes from quote's AI suggested posting time
+        const { hours, minutes } = extractTimeComponents(quote.suggestedPostingTime);
+
+        // 2. Start from tomorrow at the quote's AI recommended time
+        let dayOffset = 1;
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() + dayOffset);
-        targetDate.setHours(slots[slotIndex], 0, 0, 0);
+        targetDate.setHours(hours, minutes, 0, 0);
 
+        // 3. Collision Resolution: Step forward in 30-min increments up to 10:00 PM (22:00)
+        while (assignedTimestamps.has(targetDate.getTime())) {
+          targetDate.setMinutes(targetDate.getMinutes() + 30);
+
+          // If resolving collision requires a time past 10:00 PM (22:00), move to next day at original AI time
+          if (targetDate.getHours() > 22 || (targetDate.getHours() === 22 && targetDate.getMinutes() > 0)) {
+            dayOffset++;
+            targetDate.setTime(new Date().getTime());
+            targetDate.setDate(targetDate.getDate() + dayOffset);
+            targetDate.setHours(hours, minutes, 0, 0);
+          }
+        }
+
+        // 4. Record timestamp as assigned
+        assignedTimestamps.add(targetDate.getTime());
+
+        // 5. Save updated schedule to MongoDB
         await updateQuote(quote._id, {
           status: 'Scheduled',
           scheduledAt: targetDate,
           platforms: ['LinkedIn', 'Instagram'],
         });
-
-        slotIndex++;
-        if (slotIndex >= slots.length) {
-          slotIndex = 0;
-          dayOffset++;
-        }
       }
 
       await fetchSchedulerData();
