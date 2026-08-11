@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   generateQuote,
+  createQuote,
   getQuotes,
   getQuoteById,
   updateQuote,
@@ -14,7 +15,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.use(protect);
 
 router.post('/generate', generateQuote);
-router.route('/').get(getQuotes);
+router.route('/').get(getQuotes).post(createQuote);
 router
   .route('/:id')
   .get(getQuoteById)

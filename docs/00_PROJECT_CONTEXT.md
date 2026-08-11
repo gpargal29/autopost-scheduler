@@ -51,11 +51,11 @@ The repository implements a complete application where authenticated users can g
 | :--- | :---: | :--- |
 | **Authentication** | ✅ Complete | Full registration, login, password visibility toggle, JWT validation, `protect` middleware, AuthContext. |
 | **Dashboard & Analytics** | ✅ Complete | Unified Dashboard command center with KPIs, Category Breakdown, Recent Activity, & Scheduled Queue (`Analytics.jsx` merged). |
-| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq API (`llama-3.3-70b-versatile`). |
+| **AI Quote Generator** | ✅ Complete | Generates 12 categories with structured metadata via Groq API. Output is held in temporary React state with 4 explicit user actions (Save to Library, Schedule Post, Publish Now, Generate Another). |
 | **Quote Library** | ✅ Complete | Full CRUD, regex search, category/status filters, grid/table toggles, edit, delete, duplicate. |
-| **Smart Scheduler** | 🟡 Partial | Manual scheduling & internal cron complete; AI single & bulk scheduling use hardcoded slot rules (`09:30 AM` / `[9, 14, 19]`). |
+| **Smart Scheduler** | ✅ Complete | Manual scheduling & internal cron complete; dynamic AI single & bulk scheduling parse `suggestedPostingTime` (30-min collision resolution) and dynamically select connected social accounts. |
 | **Background Scheduler** | ✅ Complete | Internal Node Cron job running every minute (`* * * * *`) updating `Scheduled` quotes to `Posted` in DB. |
-| **Social Accounts** | 🟡 Partial | Stores `isConnected` boolean flag in DB for LinkedIn, Instagram, Facebook; no OAuth 2.0 authorization or access tokens. |
+| **Social Accounts** | 🟡 Partial | Stores `isConnected` boolean flag in DB for LinkedIn, Instagram, Facebook (used by `socialService.js` for dynamic target platform selection); no OAuth 2.0 authorization or access tokens. |
 | **Social Publishing** | 🔴 Simulated | Background cron job updates DB status to `Posted`; live external API publishing (LinkedIn, Instagram, Facebook) is simulated by design. |
 | **Posting History** | ✅ Complete | Audit table `PostingHistory.jsx` displaying published/failed DB records. |
 | **Settings** | ✅ Complete | Redesigned SaaS Settings page with Account, AI Engine status, local preferences toggles, and System Health bar. |

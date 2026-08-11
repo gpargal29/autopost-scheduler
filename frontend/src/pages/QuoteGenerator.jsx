@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { generateQuoteAI } from '../services/quoteService';
+import { generateQuoteAI, createQuote, updateQuote } from '../services/quoteService';
+import ScheduleModal from '../components/ScheduleModal';
 import {
   Sparkles,
   Flame,
@@ -21,7 +22,10 @@ import {
   Image as ImageIcon,
   Send,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Bookmark,
+  Calendar,
+  RefreshCw,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,7 +52,10 @@ const QuoteGenerator = () => {
   const [selectedTone, setSelectedTone] = useState('Inspirational');
   const [targetAudience, setTargetAudience] = useState('Entrepreneurs & Professionals');
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState('');
   const [generatedQuote, setGeneratedQuote] = useState(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -57,6 +64,7 @@ const QuoteGenerator = () => {
   const handleGenerate = async (e) => {
     e.preventDefault();
     setError('');
+    setActionFeedback('');
     setLoading(true);
     setGeneratedQuote(null);
 
@@ -72,10 +80,89 @@ const QuoteGenerator = () => {
         setGeneratedQuote(data.quote);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate quote. Check OpenAI API Key.');
+      setError(err.response?.data?.message || 'Failed to generate quote. Check API configuration.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Action 1: Save to Library (Pending)
+  const handleSaveToLibrary = async () => {
+    if (!generatedQuote || actionLoading) return;
+
+    if (generatedQuote._id) {
+      setActionFeedback('Quote is already saved in your Library.');
+      return;
+    }
+
+    setActionLoading(true);
+    setError('');
+    try {
+      const res = await createQuote({
+        ...generatedQuote,
+        status: 'Pending',
+      });
+
+      if (res.success) {
+        setGeneratedQuote(res.quote);
+        setActionFeedback('Quote saved to Library successfully!');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save quote to Library');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Action 2: Schedule Post (Open ScheduleModal)
+  const handleSchedulePost = () => {
+    if (!generatedQuote) return;
+    setIsScheduleModalOpen(true);
+  };
+
+  // Action 3: Publish Now (Simulated flow)
+  const handlePublishNow = async () => {
+    if (!generatedQuote || actionLoading) return;
+    if (generatedQuote.status === 'Posted') {
+      setActionFeedback('Quote has already been published.');
+      return;
+    }
+
+    setActionLoading(true);
+    setError('');
+    try {
+      let res;
+      if (generatedQuote._id) {
+        res = await updateQuote(generatedQuote._id, {
+          status: 'Posted',
+          postedAt: new Date(),
+          platforms: ['LinkedIn', 'Instagram'],
+        });
+      } else {
+        res = await createQuote({
+          ...generatedQuote,
+          status: 'Posted',
+          postedAt: new Date(),
+          platforms: ['LinkedIn', 'Instagram'],
+        });
+      }
+
+      if (res.success) {
+        setGeneratedQuote(res.quote);
+        setActionFeedback('Quote published successfully (Simulated flow)!');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to publish quote');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Action 4: Generate Another (Discard current temporary result)
+  const handleGenerateAnother = () => {
+    setGeneratedQuote(null);
+    setActionFeedback('');
+    setError('');
   };
 
   const copyToClipboard = (text, type) => {
@@ -229,9 +316,26 @@ const QuoteGenerator = () => {
                   <Sparkles class="w-3.5 h-3.5" />
                   Category: {generatedQuote.category}
                 </span>
-                <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                  Added to Library
-                </span>
+                {!generatedQuote._id && (
+                  <span class="text-xs text-amber-400 font-semibold bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                    Unsaved Draft
+                  </span>
+                )}
+                {generatedQuote._id && generatedQuote.status === 'Pending' && (
+                  <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    Saved in Library
+                  </span>
+                )}
+                {generatedQuote._id && generatedQuote.status === 'Scheduled' && (
+                  <span class="text-xs text-indigo-400 font-semibold bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
+                    Scheduled
+                  </span>
+                )}
+                {generatedQuote._id && generatedQuote.status === 'Posted' && (
+                  <span class="text-xs text-teal-400 font-semibold bg-teal-500/10 px-2.5 py-1 rounded-full border border-teal-500/20">
+                    Published
+                  </span>
+                )}
               </div>
 
               {/* Quote Card */}
@@ -340,14 +444,60 @@ const QuoteGenerator = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div class="flex flex-wrap gap-3 pt-2">
-                <button
-                  onClick={() => navigate('/library')}
-                  class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700"
-                >
-                  View in Library
-                </button>
+              {/* Action Feedback & 4 Post-Generation Action Buttons */}
+              <div class="space-y-3 pt-2">
+                {actionFeedback && (
+                  <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
+                    <Check class="w-4 h-4 shrink-0" />
+                    <span>{actionFeedback}</span>
+                  </div>
+                )}
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {/* 1. Save to Library */}
+                  <button
+                    type="button"
+                    onClick={handleSaveToLibrary}
+                    disabled={actionLoading || !!generatedQuote._id}
+                    class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-semibold border border-slate-700 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    {actionLoading ? <Loader2 class="w-3.5 h-3.5 animate-spin" /> : <Bookmark class="w-3.5 h-3.5 text-brand-400" />}
+                    {generatedQuote._id ? 'Saved in Library' : 'Save to Library'}
+                  </button>
+
+                  {/* 2. Schedule Post */}
+                  <button
+                    type="button"
+                    onClick={handleSchedulePost}
+                    disabled={actionLoading}
+                    class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-semibold border border-slate-700 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <Calendar class="w-3.5 h-3.5 text-indigo-400" />
+                    {generatedQuote.status === 'Scheduled' ? 'Reschedule Post' : 'Schedule Post'}
+                  </button>
+
+                  {/* 3. Publish Now */}
+                  <button
+                    type="button"
+                    onClick={handlePublishNow}
+                    disabled={actionLoading || generatedQuote.status === 'Posted'}
+                    class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-semibold border border-slate-700 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    {actionLoading ? <Loader2 class="w-3.5 h-3.5 animate-spin" /> : <Send class="w-3.5 h-3.5 text-emerald-400" />}
+                    {generatedQuote.status === 'Posted' ? 'Published' : 'Publish Now'}
+                  </button>
+
+                  {/* 4. Generate Another */}
+                  <button
+                    type="button"
+                    onClick={handleGenerateAnother}
+                    disabled={actionLoading}
+                    class="px-3 py-2.5 rounded-xl bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 text-xs font-semibold border border-brand-500/30 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <RefreshCw class="w-3.5 h-3.5 text-brand-400" />
+                    Generate Another
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -363,6 +513,17 @@ const QuoteGenerator = () => {
           )}
         </div>
       </div>
+
+      {/* Schedule Modal for Action 2 */}
+      <ScheduleModal
+        quote={generatedQuote}
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onScheduleSuccess={(savedQuote) => {
+          setGeneratedQuote(savedQuote);
+          setActionFeedback('Quote scheduled successfully!');
+        }}
+      />
     </div>
   );
 };

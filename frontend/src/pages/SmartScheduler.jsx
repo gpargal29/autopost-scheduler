@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getQuotes, updateQuote } from '../services/quoteService';
 import ScheduleModal from '../components/ScheduleModal';
 import { extractTimeComponents } from '../utils/dateHelpers';
+import { getConnectedPlatforms } from '../services/socialService';
 import {
   CalendarClock,
   Sparkles,
@@ -52,6 +53,13 @@ const SmartScheduler = () => {
     setAutoScheduling(true);
 
     try {
+      const connectedPlatforms = await getConnectedPlatforms();
+      if (connectedPlatforms.length === 0) {
+        alert('Connect at least one social account to schedule this post.');
+        setAutoScheduling(false);
+        return;
+      }
+
       const assignedTimestamps = new Set();
 
       for (let i = 0; i < pendingQuotes.length; i++) {
@@ -82,11 +90,11 @@ const SmartScheduler = () => {
         // 4. Record timestamp as assigned
         assignedTimestamps.add(targetDate.getTime());
 
-        // 5. Save updated schedule to MongoDB
+        // 5. Save updated schedule to MongoDB using connected platforms
         await updateQuote(quote._id, {
           status: 'Scheduled',
           scheduledAt: targetDate,
-          platforms: ['LinkedIn', 'Instagram'],
+          platforms: connectedPlatforms,
         });
       }
 

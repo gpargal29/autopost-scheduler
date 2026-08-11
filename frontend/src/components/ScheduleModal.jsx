@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Sparkles, Check, Loader2, Share2, Clock } from 'lucide-react';
-import { updateQuote } from '../services/quoteService';
+import { X, Calendar, Sparkles, Check, Loader2, Share2, Clock, AlertCircle } from 'lucide-react';
+import { updateQuote, createQuote } from '../services/quoteService';
 import { parseSuggestedPostingTime } from '../utils/dateHelpers';
+import { getConnectedPlatforms } from '../services/socialService';
 
 const AVAILABLE_PLATFORMS = ['LinkedIn', 'Instagram', 'Facebook'];
 
@@ -11,7 +12,9 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
   const [scheduleType, setScheduleType] = useState('ai'); // 'ai' or 'manual'
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [selectedPlatforms, setSelectedPlatforms] = useState(['LinkedIn', 'Instagram']);
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+  const [connectedPlatforms, setConnectedPlatforms] = useState([]);
+  const [loadingPlatforms, setLoadingPlatforms] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,21 +61,37 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
   };
 
   useEffect(() => {
-    if (quote) {
+    if (quote && isOpen) {
       const targetDate = quote.scheduledAt
         ? new Date(quote.scheduledAt)
         : parseSuggestedPostingTime(quote.suggestedPostingTime);
 
       applyDateObjToState(targetDate);
-      setSelectedPlatforms(quote.platforms?.length > 0 ? quote.platforms : ['LinkedIn', 'Instagram']);
+
+      const initPlatforms = async () => {
+        setLoadingPlatforms(true);
+        const connected = await getConnectedPlatforms();
+        setConnectedPlatforms(connected);
+
+        if (quote.platforms && quote.platforms.length > 0) {
+          const validSelected = quote.platforms.filter((p) => connected.includes(p));
+          setSelectedPlatforms(validSelected);
+        } else {
+          setSelectedPlatforms(connected);
+        }
+        setLoadingPlatforms(false);
+      };
+
+      initPlatforms();
     }
-  }, [quote]);
+  }, [quote, isOpen]);
 
   if (!isOpen || !quote) return null;
 
   const togglePlatform = (platform) => {
+    if (!connectedPlatforms.includes(platform)) return;
+
     if (selectedPlatforms.includes(platform)) {
-      if (selectedPlatforms.length === 1) return; // Must keep at least one
       setSelectedPlatforms(selectedPlatforms.filter((p) => p !== platform));
     } else {
       setSelectedPlatforms([...selectedPlatforms, platform]);
@@ -97,6 +116,12 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
         return;
       }
 
+      if (selectedPlatforms.length === 0) {
+        setError('Connect at least one social account to schedule this post.');
+        setSaving(false);
+        return;
+      }
+
       const scheduledDateObj = new Date(`${scheduledDate}T${scheduledTime}`);
       if (isNaN(scheduledDateObj.getTime())) {
         setError('Please select a valid date and time');
@@ -104,11 +129,21 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
         return;
       }
 
-      const updated = await updateQuote(quote._id, {
-        status: 'Scheduled',
-        scheduledAt: scheduledDateObj,
-        platforms: selectedPlatforms,
-      });
+      let updated;
+      if (quote._id) {
+        updated = await updateQuote(quote._id, {
+          status: 'Scheduled',
+          scheduledAt: scheduledDateObj,
+          platforms: selectedPlatforms,
+        });
+      } else {
+        updated = await createQuote({
+          ...quote,
+          status: 'Scheduled',
+          scheduledAt: scheduledDateObj,
+          platforms: selectedPlatforms,
+        });
+      }
 
       if (updated.success) {
         onScheduleSuccess(updated.quote);
@@ -264,23 +299,37 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
               </label>
               <div class="flex gap-3">
                 {AVAILABLE_PLATFORMS.map((plat) => {
+                  const isConnected = connectedPlatforms.includes(plat);
                   const isSelected = selectedPlatforms.includes(plat);
                   return (
                     <button
                       key={plat}
                       type="button"
                       onClick={() => togglePlatform(plat)}
-                      class={`flex-1 py-2.5 px-3 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${isSelected
+                      disabled={!isConnected}
+                      class={`flex-1 py-2.5 px-3 rounded-xl border font-bold flex items-center justify-center gap-2 transition-all ${
+                        !isConnected
+                          ? 'bg-slate-950/40 border-slate-800/50 text-slate-600 cursor-not-allowed opacity-60'
+                          : isSelected
                           ? 'bg-slate-800 border-brand-500 text-brand-400 shadow-md shadow-brand-500/10'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-500'
-                        }`}
+                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
+                      title={!isConnected ? `${plat} is disconnected` : `Toggle ${plat}`}
                     >
                       {isSelected && <Check class="w-3.5 h-3.5 text-brand-400" />}
                       <span>{plat}</span>
+                      {!isConnected && <span class="text-[9px] font-normal text-slate-500">(Off)</span>}
                     </button>
                   );
                 })}
               </div>
+
+              {selectedPlatforms.length === 0 && (
+                <div class="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs flex items-center gap-2">
+                  <AlertCircle class="w-4 h-4 shrink-0" />
+                  <span>Connect at least one social account to schedule this post.</span>
+                </div>
+              )}
             </div>
 
             {/* Footer Actions */}
@@ -294,8 +343,8 @@ const ScheduleModal = ({ quote, isOpen, onClose, onScheduleSuccess }) => {
               </button>
               <button
                 type="submit"
-                disabled={saving}
-                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold flex items-center gap-2 shadow-lg shadow-brand-500/20"
+                disabled={saving || selectedPlatforms.length === 0 || loadingPlatforms}
+                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold flex items-center gap-2 shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? <Loader2 class="w-4 h-4 animate-spin" /> : <Calendar class="w-4 h-4" />}
                 Confirm Schedule

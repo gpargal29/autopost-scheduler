@@ -6,6 +6,7 @@ import {
 } from '../services/quoteService';
 import EditQuoteModal from '../components/EditQuoteModal';
 import ScheduleModal from '../components/ScheduleModal';
+import Pagination from '../components/Pagination';
 import {
   Search,
   Filter,
@@ -50,6 +51,8 @@ const QuoteLibrary = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [page, setPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState({ page: 1, pages: 1, total: 0, limit: 15 });
 
   // Modals state
   const [editingQuote, setEditingQuote] = useState(null);
@@ -59,14 +62,24 @@ const QuoteLibrary = () => {
   const fetchQuotes = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = { page, limit: 15 };
       if (selectedCategory !== 'All') params.category = selectedCategory;
       if (selectedStatus !== 'All') params.status = selectedStatus;
       if (search) params.search = search;
 
       const data = await getQuotes(params);
       if (data.success) {
+        if (data.quotes.length === 0 && data.total > 0 && page > data.pages) {
+          setPage(data.pages);
+          return;
+        }
         setQuotes(data.quotes);
+        setPaginationMeta({
+          page: data.page || 1,
+          pages: data.pages || 1,
+          total: data.total || 0,
+          limit: 15,
+        });
       }
     } catch (err) {
       console.error('Failed to fetch quotes:', err);
@@ -76,8 +89,12 @@ const QuoteLibrary = () => {
   };
 
   useEffect(() => {
-    fetchQuotes();
+    setPage(1);
   }, [selectedCategory, selectedStatus, search]);
+
+  useEffect(() => {
+    fetchQuotes();
+  }, [selectedCategory, selectedStatus, search, page]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this quote?')) return;
@@ -85,7 +102,11 @@ const QuoteLibrary = () => {
     try {
       const res = await deleteQuote(id);
       if (res.success) {
-        setQuotes(quotes.filter((q) => q._id !== id));
+        if (quotes.length === 1 && page > 1) {
+          setPage((prev) => prev - 1);
+        } else {
+          fetchQuotes();
+        }
       }
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete quote');
@@ -99,7 +120,7 @@ const QuoteLibrary = () => {
     try {
       const res = await duplicateQuote(id);
       if (res.success) {
-        setQuotes([res.quote, ...quotes]);
+        fetchQuotes();
       }
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to duplicate quote');
@@ -281,13 +302,23 @@ const QuoteLibrary = () => {
 
               {/* Actions toolbar */}
               <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <button
-                  onClick={() => setSchedulingQuote(q)}
-                  class="px-3 py-1.5 rounded-lg bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  <Calendar class="w-3.5 h-3.5" />
-                  Schedule
-                </button>
+                {q.status !== 'Posted' ? (
+                  <button
+                    onClick={() => setSchedulingQuote(q)}
+                    class={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1.5 transition-colors ${
+                      q.status === 'Scheduled'
+                        ? 'bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border-indigo-500/30'
+                        : q.status === 'Failed'
+                        ? 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border-rose-500/30'
+                        : 'bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border-brand-500/30'
+                    }`}
+                  >
+                    <Calendar class="w-3.5 h-3.5" />
+                    {q.status === 'Scheduled' ? 'Reschedule' : q.status === 'Failed' ? 'Retry' : 'Schedule'}
+                  </button>
+                ) : (
+                  <div />
+                )}
 
                 <div class="flex items-center gap-1">
                   <button
@@ -351,13 +382,21 @@ const QuoteLibrary = () => {
                     </td>
                     <td class="p-4 text-right">
                       <div class="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setSchedulingQuote(q)}
-                          class="p-1.5 rounded-lg text-brand-400 hover:bg-brand-500/10"
-                          title="Schedule"
-                        >
-                          <Calendar class="w-4 h-4" />
-                        </button>
+                        {q.status !== 'Posted' && (
+                          <button
+                            onClick={() => setSchedulingQuote(q)}
+                            class={`p-1.5 rounded-lg transition-colors ${
+                              q.status === 'Scheduled'
+                                ? 'text-indigo-400 hover:bg-indigo-500/10'
+                                : q.status === 'Failed'
+                                ? 'text-rose-400 hover:bg-rose-500/10'
+                                : 'text-brand-400 hover:bg-brand-500/10'
+                            }`}
+                            title={q.status === 'Scheduled' ? 'Reschedule' : q.status === 'Failed' ? 'Retry' : 'Schedule'}
+                          >
+                            <Calendar class="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => setEditingQuote(q)}
                           class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
@@ -388,6 +427,16 @@ const QuoteLibrary = () => {
           </div>
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <Pagination
+        page={page}
+        pages={paginationMeta.pages}
+        total={paginationMeta.total}
+        limit={15}
+        onPageChange={(p) => setPage(p)}
+        label="quotes"
+      />
 
       {/* Edit Modal */}
       <EditQuoteModal

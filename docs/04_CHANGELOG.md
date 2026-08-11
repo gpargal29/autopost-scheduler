@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.3.0] - 2026-08-10
+
+- **Release Name**: Dynamic AI Scheduling, Unpersisted Quote Generator Workflow & Status-Aware Quote Library Actions
+- **Release Type**: Minor Release
+- **Release Status**: Stable
+
+### Added
+- **Unpersisted AI Quote Generator Workflow**: Refactored `QuoteGenerator.jsx` and `quoteController.js` so that AI generation returns unpersisted content in React state without auto-saving to MongoDB. Exposed 4 explicit user actions: **Save to Library**, **Schedule Post**, **Publish Now**, and **Generate Another**.
+- **Quote Document Creation API**: Exposed `POST /api/quotes` controller (`createQuote`) to explicitly persist quotes with target statuses (`Pending`, `Scheduled`, `Posted`) attached to authenticated user sessions.
+- **Shared Date Helper Utility**: Created `frontend/src/utils/dateHelpers.js` providing `extractTimeComponents()`, `parseSuggestedPostingTime()`, and `formatToDateTimeLocal()`.
+
+### Changed / Refactored
+- **Dynamic AI Single Scheduling**: Refactored `ScheduleModal.jsx` to dynamically extract and parse the quote's stored `suggestedPostingTime` (e.g. `"08:30 AM (Peak morning focus)"`) and apply it to tomorrow's date.
+- **Dual Date & Time Picker UX**: Replaced single `<input type="datetime-local">` in `ScheduleModal.jsx` with responsive `<input type="date">` and `<input type="time">` pickers, adding native `showPicker()` refs and preserving AI recommendations when toggling manual mode.
+- **Dynamic AI Bulk Scheduling**: Refactored `SmartScheduler.jsx` (`handleBulkAutoSchedule`) to calculate scheduled dates/times from each quote's individual AI recommendation string with 30-minute collision resolution up to 10:00 PM.
+- **Status-Aware Quote Library Actions**: Refactored `QuoteLibrary.jsx` grid and table views:
+  - `Pending` → displays **Schedule** button.
+  - `Scheduled` → displays **Reschedule** button.
+  - `Posted` → hides scheduling actions.
+  - `Failed` → displays **Failed** status badge (`bg-rose-500/10`) and **Retry** action button opening `ScheduleModal`.
+- **Server-Side Pagination**:
+  - Created reusable `frontend/src/components/Pagination.jsx` component featuring range indicators (`Showing 1–15 of X`), current page tracking (`Page Y of Z`), and accessible `Previous` / `Next` controls.
+  - Updated `backend/controllers/quoteController.js` (`getQuotes`) to support comma-separated status strings (e.g. `status=Posted,Failed`) via Mongoose `$in` array filtering.
+  - Connected `QuoteLibrary.jsx` and `PostingHistory.jsx` to server-side pagination (`limit: 15`) with automatic page step-back handling on record deletion.
+- **Dynamic Connected-Platform Selection**:
+  - Created `frontend/src/services/socialService.js` helper module providing `getSocialAccounts()` and `getConnectedPlatforms()` to query `GET /api/social-accounts`.
+  - Refactored `ScheduleModal.jsx` to dynamically initialize default selected target platforms based on the user's active connected social accounts (`LinkedIn`, `Instagram`, `Facebook`).
+  - Added platform validation to `ScheduleModal.jsx`: disabled confirmation button and rendered alert banner (`"Connect at least one social account to schedule this post."`) if no platforms are selected or connected.
+  - Refactored `SmartScheduler.jsx` (`handleBulkAutoSchedule`) to apply the user's active connected platforms to bulk-scheduled quotes dynamically instead of using hardcoded arrays.
+
+---
+
 ## [1.2.0] - 2026-08-07
 
 - **Release Name**: Dashboard Consolidation, SaaS Settings & UI Refinements

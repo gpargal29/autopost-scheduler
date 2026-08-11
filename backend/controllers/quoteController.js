@@ -1,7 +1,7 @@
 const Quote = require('../models/Quote');
 const { generateQuoteAI } = require('../services/openaiService');
 
-// @desc    Generate AI Quote & save to database
+// @desc    Generate AI Quote metadata (unpersisted)
 // @route   POST /api/quotes/generate
 // @access  Private
 const generateQuote = async (req, res, next) => {
@@ -15,7 +15,7 @@ const generateQuote = async (req, res, next) => {
       });
     }
 
-    // Call OpenAI Service
+    // Call AI Service
     const aiResult = await generateQuoteAI({
       category,
       customTopic,
@@ -23,9 +23,8 @@ const generateQuote = async (req, res, next) => {
       targetAudience,
     });
 
-    // Create record in MongoDB
-    const newQuote = await Quote.create({
-      user: req.user._id,
+    // Return unpersisted AI generated quote object
+    const generatedContent = {
       category,
       quote: aiResult.quote,
       author: aiResult.author,
@@ -37,6 +36,62 @@ const generateQuote = async (req, res, next) => {
       suggestedPostingTime: aiResult.suggestedPostingTime,
       engagementSuggestions: aiResult.engagementSuggestions,
       status: 'Pending',
+    };
+
+    res.status(200).json({
+      success: true,
+      quote: generatedContent,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create/Save a new quote record in MongoDB Atlas
+// @route   POST /api/quotes
+// @access  Private
+const createQuote = async (req, res, next) => {
+  try {
+    const {
+      category,
+      quote,
+      author,
+      caption,
+      explanation,
+      hashtags,
+      emojiSuggestions,
+      imagePrompt,
+      suggestedPostingTime,
+      engagementSuggestions,
+      status = 'Pending',
+      scheduledAt = null,
+      postedAt = null,
+      platforms = [],
+    } = req.body;
+
+    if (!quote || !category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quote text and category are required',
+      });
+    }
+
+    const newQuote = await Quote.create({
+      user: req.user._id,
+      category,
+      quote,
+      author: author || 'AI Generated',
+      caption,
+      explanation,
+      hashtags,
+      emojiSuggestions,
+      imagePrompt,
+      suggestedPostingTime,
+      engagementSuggestions,
+      status,
+      scheduledAt,
+      postedAt,
+      platforms,
     });
 
     res.status(201).json({
@@ -62,7 +117,11 @@ const getQuotes = async (req, res, next) => {
     }
 
     if (status) {
-      query.status = status;
+      if (status.includes(',')) {
+        query.status = { $in: status.split(',').map((s) => s.trim()) };
+      } else {
+        query.status = status;
+      }
     }
 
     if (search) {
@@ -206,6 +265,7 @@ const duplicateQuote = async (req, res, next) => {
 
 module.exports = {
   generateQuote,
+  createQuote,
   getQuotes,
   getQuoteById,
   updateQuote,

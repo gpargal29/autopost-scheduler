@@ -5,6 +5,11 @@ export const generateQuoteAI = async (payload) => {
   return response.data;
 };
 
+export const createQuote = async (payload) => {
+  const response = await API.post('/quotes', payload);
+  return response.data;
+};
+
 export const getQuotes = async (params = {}) => {
   const response = await API.get('/quotes', { params });
   return response.data;
